@@ -20,7 +20,8 @@ import {
   AlertTriangle,
   Download,
   Share2,
-  RefreshCw
+  RefreshCw,
+  ListChecks
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -158,6 +159,11 @@ const Dashboard = () => {
                   <Link to="/honeypot" className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground hover:bg-secondary hover:text-foreground">
                     <Monitor className="h-4 w-4" />
                     <span>Honeypot</span>
+                  </Link>
+                  
+                  <Link to="/results" className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground hover:bg-secondary hover:text-foreground">
+                    <ListChecks className="h-4 w-4" />
+                    <span>Results</span>
                   </Link>
                   
                   <Button variant="ghost" className="flex items-center justify-start gap-3 rounded-md px-3 py-2 text-muted-foreground hover:bg-secondary hover:text-foreground">
