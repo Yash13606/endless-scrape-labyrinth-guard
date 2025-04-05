@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarHeader, SidebarFooter } from '@/components/ui/sidebar';
-import { ArrowLeft, Globe, BarChart3, ShieldAlert, Shield, Activity, Server, HexagonAlert, List, FileCode, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Globe, BarChart3, ShieldAlert, Shield, Activity, Server, AlertTriangle, List, FileCode, Lightbulb } from 'lucide-react';
 
 const Results = () => {
   return (
