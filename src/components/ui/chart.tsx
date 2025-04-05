@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -353,6 +354,145 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
+// Add the missing chart components
+interface AreaChartProps {
+  className?: string;
+  data: any[];
+  index: string;
+  categories: string[];
+  colors: string[];
+  [key: string]: any;
+}
+
+const AreaChart = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & AreaChartProps
+>(({ className, data, index, categories, colors, ...props }, ref) => {
+  const ids = React.useId();
+  
+  // Create config object for colors
+  const config: ChartConfig = {};
+  categories.forEach((category, i) => {
+    config[category] = { color: colors[i] };
+  });
+
+  return (
+    <ChartContainer ref={ref} className={cn("w-full", className)} config={config} {...props}>
+      <RechartsPrimitive.AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+        <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
+        <RechartsPrimitive.XAxis 
+          dataKey={index} 
+          tickLine={false} 
+          axisLine={false}
+        />
+        <RechartsPrimitive.YAxis tickLine={false} axisLine={false} />
+        <ChartTooltip content={<ChartTooltipContent />} />
+        {categories.map((category, i) => (
+          <RechartsPrimitive.Area
+            key={`${ids}-${category}`}
+            type="monotone"
+            dataKey={category}
+            stroke={colors[i % colors.length]}
+            fill={colors[i % colors.length]}
+            fillOpacity={0.2}
+            strokeWidth={2}
+          />
+        ))}
+        <ChartLegend content={<ChartLegendContent />} />
+      </RechartsPrimitive.AreaChart>
+    </ChartContainer>
+  );
+});
+AreaChart.displayName = "AreaChart";
+
+interface PieChartProps {
+  className?: string;
+  data: any[];
+  index: string;
+  valueKey: string;
+  colors: string[];
+  [key: string]: any;
+}
+
+const PieChart = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & PieChartProps
+>(({ className, data, index, valueKey, colors, ...props }, ref) => {
+  // Create config object for colors
+  const config: ChartConfig = {};
+  data.forEach((item, i) => {
+    config[item[index]] = { color: colors[i % colors.length] };
+  });
+
+  return (
+    <ChartContainer ref={ref} className={cn("w-full", className)} config={config} {...props}>
+      <RechartsPrimitive.PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+        <RechartsPrimitive.Pie
+          data={data}
+          nameKey={index}
+          dataKey={valueKey}
+          cx="50%"
+          cy="50%"
+          outerRadius={80}
+          fill="#8884d8"
+          label
+        >
+          {data.map((entry, i) => (
+            <RechartsPrimitive.Cell 
+              key={`cell-${i}`} 
+              fill={colors[i % colors.length]} 
+            />
+          ))}
+        </RechartsPrimitive.Pie>
+        <ChartTooltip content={<ChartTooltipContent />} />
+        <ChartLegend content={<ChartLegendContent />} />
+      </RechartsPrimitive.PieChart>
+    </ChartContainer>
+  );
+});
+PieChart.displayName = "PieChart";
+
+interface BarChartProps {
+  className?: string;
+  data: any[];
+  index: string;
+  categories: string[];
+  colors: string[];
+  [key: string]: any;
+}
+
+const BarChart = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & BarChartProps
+>(({ className, data, index, categories, colors, ...props }, ref) => {
+  // Create config object for colors
+  const config: ChartConfig = {};
+  categories.forEach((category, i) => {
+    config[category] = { color: colors[i % colors.length] };
+  });
+
+  return (
+    <ChartContainer ref={ref} className={cn("w-full", className)} config={config} {...props}>
+      <RechartsPrimitive.BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+        <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
+        <RechartsPrimitive.XAxis dataKey={index} tickLine={false} axisLine={false} />
+        <RechartsPrimitive.YAxis tickLine={false} axisLine={false} />
+        <ChartTooltip content={<ChartTooltipContent />} />
+        {categories.map((category, i) => (
+          <RechartsPrimitive.Bar
+            key={`bar-${category}`}
+            dataKey={category}
+            fill={colors[i % colors.length]}
+            radius={[4, 4, 0, 0]}
+          />
+        ))}
+        <ChartLegend content={<ChartLegendContent />} />
+      </RechartsPrimitive.BarChart>
+    </ChartContainer>
+  );
+});
+BarChart.displayName = "BarChart";
+
 export {
   ChartContainer,
   ChartTooltip,
@@ -360,4 +500,7 @@ export {
   ChartLegend,
   ChartLegendContent,
   ChartStyle,
+  AreaChart,
+  PieChart,
+  BarChart
 }
