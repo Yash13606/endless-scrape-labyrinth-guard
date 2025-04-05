@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,24 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				abyss: {
+					DEFAULT: '#121212',
+					50: '#f2f2f2',
+					100: '#e6e6e6',
+					200: '#cccccc',
+					300: '#b3b3b3',
+					400: '#999999',
+					500: '#808080',
+					600: '#666666',
+					700: '#4d4d4d',
+					800: '#333333',
+					900: '#1a1a1a',
+				},
+				neon: {
+					blue: '#00f2ff',
+					purple: '#8a2be2',
+					red: '#ff003c',
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -84,11 +103,21 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-subtle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' }
+				},
+				'data-flow': {
+					'0%': { transform: 'translateY(0)' },
+					'100%': { transform: 'translateY(-20px)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+				'data-flow': 'data-flow 1.5s ease-in-out infinite alternate'
 			}
 		}
 	},
