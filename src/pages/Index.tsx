@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { BotDetectionResult, initBotDetection } from '@/utils/botDetector';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Activity, ShieldAlert, Database, BarChart3, Settings } from 'lucide-react';
+import { ChevronRight, Activity, ShieldAlert, Database, BarChart3, Settings, CheckCircle2 } from 'lucide-react';
 
 const Index = () => {
   const [botLogs, setBotLogs] = useState<BotDetectionResult[]>([]);
@@ -11,13 +10,11 @@ const Index = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    // Animate the data flow element
     const interval = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 1500);
     }, 5000);
 
-    // Load any stored bot logs from local storage
     const storedLogs = localStorage.getItem('botLogs');
     if (storedLogs) {
       const logs = JSON.parse(storedLogs);
@@ -25,10 +22,8 @@ const Index = () => {
       setBotCount(logs.filter((log: BotDetectionResult) => log.isBot).length);
     }
 
-    // Initialize bot detection
     initBotDetection();
 
-    // Listen for new bot detections
     const handleBotDetected = (event: CustomEvent<BotDetectionResult>) => {
       setBotLogs(prev => [...prev, event.detail]);
       if (event.detail.isBot) {
@@ -46,7 +41,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header/Hero Section */}
       <header className="py-12 px-4 md:px-8 lg:px-16 bg-gradient-to-r from-abyss-900 to-abyss-800">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
@@ -106,7 +100,6 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Decorative elements */}
               <div className="absolute -top-3 -right-3 h-20 w-20 bg-neon-purple/10 rounded-full blur-xl animate-pulse-subtle"></div>
               <div className="absolute -bottom-5 -left-5 h-28 w-28 bg-neon-blue/10 rounded-full blur-xl animate-pulse-subtle"></div>
             </div>
@@ -114,7 +107,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Feature Grid */}
       <section className="py-16 px-4 md:px-8 bg-abyss-900">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Key Capabilities</h2>
@@ -153,7 +145,54 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Call to Action */}
+      <section className="py-16 px-4 md:px-8 bg-gradient-to-r from-abyss-800 to-abyss-900">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4 text-white">Premium Solutions</h2>
+            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+              Protect your digital assets with our comprehensive security solutions and expert services.
+            </p>
+          </div>
+          
+          <div className="bg-abyss-700/50 border border-abyss-600 rounded-lg p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="md:w-2/3">
+                <h3 className="text-2xl font-semibold mb-4 text-white">Enterprise-Grade Bot Protection</h3>
+                <p className="text-gray-300 mb-6">
+                  Our tiered subscription plans provide scalable solutions for businesses of all sizes. From basic bot detection for small websites to advanced AI-powered threat analysis for large enterprises.
+                </p>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                  <li className="flex items-start">
+                    <CheckCircle2 className="h-5 w-5 text-neon-blue mr-2 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">Tiered subscription plans</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="h-5 w-5 text-neon-blue mr-2 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">Custom implementation</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="h-5 w-5 text-neon-blue mr-2 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">Consulting services</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="h-5 w-5 text-neon-blue mr-2 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">Data analytics reports</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex-shrink-0">
+                <Button asChild variant="default" size="lg" className="bg-neon-blue hover:bg-neon-blue/80 text-black font-medium">
+                  <Link to="/pricing">
+                    View Pricing Plans
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
       <section className="py-16 px-4 md:px-8 bg-gradient-to-b from-abyss-800 to-abyss-900">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4 text-white">Ready to start trapping bots?</h2>
@@ -177,7 +216,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="py-8 px-4 md:px-8 bg-abyss-900 border-t border-abyss-700">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
@@ -186,6 +224,8 @@ const Index = () => {
           <div className="flex gap-6">
             <Link to="/dashboard" className="text-sm text-gray-400 hover:text-neon-blue">Dashboard</Link>
             <Link to="/honeypot" className="text-sm text-gray-400 hover:text-neon-blue">Honeypot</Link>
+            <Link to="/results" className="text-sm text-gray-400 hover:text-neon-blue">Results</Link>
+            <Link to="/pricing" className="text-sm text-gray-400 hover:text-neon-blue">Pricing</Link>
             <a href="#" className="text-sm text-gray-400 hover:text-neon-blue">Documentation</a>
             <a href="#" className="text-sm text-gray-400 hover:text-neon-blue">Support</a>
           </div>
