@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarHeader, SidebarFooter } from '@/components/ui/sidebar';
-import { ArrowLeft, Globe, BarChart3, ShieldAlert, Shield, Activity, Server, AlertTriangle, List, FileCode, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Globe, BarChart3, ShieldAlert, Shield, Activity, Server, AlertTriangle, List, FileCode, Lightbulb, Bot, Settings, Database } from 'lucide-react';
 
 const Results = () => {
   return (
@@ -41,6 +42,16 @@ const Results = () => {
                   <List className="h-4 w-4" />
                   <span>Results</span>
                 </Link>
+
+                <Link to="/data-management" className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground hover:bg-secondary hover:text-foreground">
+                  <Database className="h-4 w-4" />
+                  <span>Data Management</span>
+                </Link>
+
+                <Link to="/settings" className="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground hover:bg-secondary hover:text-foreground">
+                  <Settings className="h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
               </nav>
             </SidebarGroup>
           </SidebarContent>
@@ -56,7 +67,7 @@ const Results = () => {
         <div className="flex-1">
           <header className="border-b border-abyss-700 bg-background py-3 px-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold">Results and Conclusion</h1>
+              <h1 className="text-xl font-semibold">How Perpetual Abyss Works</h1>
             </div>
           </header>
           
@@ -70,221 +81,198 @@ const Results = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Cyber Threat Map */}
-              <Card className="overflow-hidden">
-                <CardHeader className="p-4 border-b border-abyss-700 bg-abyss-800">
-                  <CardTitle className="text-lg text-center">CYBER THREAT MAP</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <img 
-                      src="/lovable-uploads/a42e15d3-083f-4cb4-8dd6-9ef4c5a89f9d.png" 
-                      alt="Cyber Threat Map" 
-                      className="w-full h-auto object-cover" 
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Key Findings */}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle>Results and Conclusion</CardTitle>
-                  <CardDescription>Key findings from our honeypot system</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <div className="flex mb-4">
-                      <div className="w-12 h-12 flex items-center justify-center bg-blue-800 text-white rounded-md">
-                        <span className="text-2xl font-bold">1</span>
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium mb-2">Key Findings</h3>
-                        <ul className="space-y-2 text-muted-foreground">
-                          <li>• Top bot sources (countries, IP ranges)</li>
-                          <li>• Most common bot targets (specific pages or content)</li>
-                          <li>• Identified bot signatures and behaviors</li>
-                        </ul>
-                      </div>
-                    </div>
-                    
-                    <div className="flex mb-4">
-                      <div className="w-12 h-12 flex items-center justify-center bg-blue-800 text-white rounded-md">
-                        <span className="text-2xl font-bold">2</span>
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium mb-2">Benefits of Perpetual Abyss</h3>
-                        <ul className="space-y-2 text-muted-foreground">
-                          <li>• Proactive threat detection</li>
-                          <li>• Improved understanding of bot behavior</li>
-                          <li>• Enhanced security</li>
-                        </ul>
-                      </div>
-                    </div>
-                    
-                    <div className="flex">
-                      <div className="w-12 h-12 flex items-center justify-center bg-blue-800 text-white rounded-md">
-                        <span className="text-2xl font-bold">3</span>
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium mb-2">Future Directions</h3>
-                        <ul className="space-y-2 text-muted-foreground">
-                          <li>• Integration with existing security systems</li>
-                          <li>• Machine learning-based bot detection</li>
-                          <li>• Community sharing of threat intelligence</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Technical Architecture */}
+            <div className="grid grid-cols-1 gap-6 mb-8">
               <Card className="lg:col-span-2">
                 <CardHeader className="pb-2">
-                  <CardTitle>Mechanism and Analysis</CardTitle>
-                  <CardDescription>How Perpetual Abyss works under the hood</CardDescription>
+                  <CardTitle>Getting Started with Perpetual Abyss</CardTitle>
+                  <CardDescription>Understand how to use our platform to protect your website</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="bg-blue-900 text-white">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Technical Architecture</CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-sm">
-                        <p>Framework uses Python/Flask backend. Dynamic content is generated with Faker library.</p>
-                        <p className="mt-2">Logs are stored in JSON format. Logs contain timestamp, IP address, and bot signature.</p>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-blue-900 text-white">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Bot Detection Techniques</CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-sm">
-                        <ul className="space-y-1">
-                          <li>• Heuristic analysis</li>
-                          <li>• Blacklist checking</li>
-                          <li>• Behavioral analysis</li>
-                        </ul>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-blue-900 text-white">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Honeypot Placement</CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-sm">
-                        <img 
-                          src="/lovable-uploads/7254206a-8a8c-4c56-bb16-2232e50c41f5.png" 
-                          alt="Honeypot placement in network" 
-                          className="w-full h-auto object-contain mb-2"
-                        />
-                        <p>Strategic placement in the network to maximize bot interaction while keeping sensitive systems secure.</p>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="md:col-span-3 bg-blue-900 text-white">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Data Analysis and Visualization</CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-sm">
-                        <p>Bot identification accuracy is 85%. Visualize bot behavior with graphs. Identify bot origins and track attack patterns.</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Introduction */}
-              <Card className="lg:col-span-2">
-                <CardHeader className="pb-2">
-                  <CardTitle>Introduction to Perpetual Abyss</CardTitle>
-                  <CardDescription>Understanding the core concepts</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-medium mb-3">What is Perpetual Abyss?</h3>
-                      <div className="space-y-2 text-sm text-muted-foreground">
-                        <p>It's an endless honeypot. It is designed to mislead and trap web scraping bots.</p>
-                        <p>It serves an infinite stream of deceptive content. The content is served to unauthorized clients.</p>
-                        <p>This honeypot engages non-compliant bots in a resource-intensive loop, diverting them from sensitive systems while collecting valuable data for analysis.</p>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-lg font-medium mb-3">Why Perpetual Abyss?</h3>
-                      <div className="space-y-2 text-sm text-muted-foreground">
-                        <p>Malicious web scraping and content theft are growing threats. Bot traffic increased 300% in 2023 (Imperva report).</p>
-                        <p>Traditional honeypots are detectable and have limited interaction.</p>
-                        <p>There is a need for real-time bot behavior analysis.</p>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-lg font-medium mb-3">Key Features</h3>
-                      <ul className="space-y-2 text-sm text-muted-foreground">
-                        <li>• Endless generation of deceptive content</li>
-                        <li>• Dynamic adaptation to bot behavior</li>
-                        <li>• Comprehensive logging and analysis</li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Live Demo */}
-              <Card className="lg:col-span-2">
-                <CardHeader className="pb-2">
-                  <CardTitle>Live System Demonstration</CardTitle>
-                  <CardDescription>See Perpetual Abyss in action</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="bg-abyss-800 rounded-lg p-4 border border-abyss-700">
-                      <h3 className="text-neon-blue font-medium mb-2 flex items-center">
-                        <Shield className="h-4 w-4 mr-2" />
-                        Live Honeypot Stats
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-abyss-700 p-3 rounded-md">
-                          <div className="text-sm text-muted-foreground">Active Bots</div>
-                          <div className="text-2xl font-bold text-neon-red">24</div>
-                        </div>
-                        <div className="bg-abyss-700 p-3 rounded-md">
-                          <div className="text-sm text-muted-foreground">Content Served</div>
-                          <div className="text-2xl font-bold text-neon-blue">14,582</div>
-                        </div>
-                        <div className="bg-abyss-700 p-3 rounded-md">
-                          <div className="text-sm text-muted-foreground">Detection Rate</div>
-                          <div className="text-2xl font-bold text-neon-purple">85%</div>
-                        </div>
-                        <div className="bg-abyss-700 p-3 rounded-md">
-                          <div className="text-sm text-muted-foreground">Unique IPs</div>
-                          <div className="text-2xl font-bold text-neon-green">347</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-center">
-                      <img 
-                        src="/lovable-uploads/f8f1063e-ced2-4a87-b0cf-d699c1eb7526.png" 
-                        alt="Mechanism and Analysis" 
-                        className="w-full max-w-4xl h-auto object-contain"
-                      />
-                    </div>
-                    
-                    <div className="text-center">
-                      <Button size="lg" className="mt-4 bg-neon-blue hover:bg-blue-600" asChild>
-                        <Link to="/honeypot">
-                          Try Honeypot Demo
-                        </Link>
-                      </Button>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Visit our demo honeypot page to see how bot detection works in real-time
+                      <h3 className="text-xl font-semibold mb-4">How Perpetual Abyss Works</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Perpetual Abyss is a powerful honeypot system designed to protect your website from malicious bots 
+                        by creating an endless maze of fake content that traps and analyzes bot behavior.
                       </p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div className="bg-abyss-800 p-4 rounded-lg border border-abyss-700">
+                          <h4 className="text-lg font-medium mb-3 text-neon-blue flex items-center">
+                            <Bot className="h-5 w-5 mr-2" />
+                            Step 1: Integrate with Your Website
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Add our JavaScript snippet to your website. This will allow Perpetual Abyss to detect and 
+                            redirect suspicious bot traffic to our honeypot system while letting legitimate users 
+                            access your real content.
+                          </p>
+                          <div className="mt-4 bg-abyss-900 p-3 rounded-md">
+                            <code className="text-xs text-neon-green">
+                              &lt;script src="https://api.perpetual-abyss.com/client.js" 
+                              data-site-id="YOUR_SITE_ID"&gt;&lt;/script&gt;
+                            </code>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-abyss-800 p-4 rounded-lg border border-abyss-700">
+                          <h4 className="text-lg font-medium mb-3 text-neon-purple flex items-center">
+                            <Activity className="h-5 w-5 mr-2" />
+                            Step 2: Configure Detection Settings
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Use the Settings page to customize bot detection parameters. Adjust thresholds for 
+                            user agent analysis, browser fingerprinting, behavior patterns, and request frequency 
+                            to match your website's specific needs.
+                          </p>
+                          <div className="mt-4">
+                            <Button variant="outline" size="sm" className="w-full" asChild>
+                              <Link to="/settings">
+                                Configure Settings
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div className="bg-abyss-800 p-4 rounded-lg border border-abyss-700">
+                          <h4 className="text-lg font-medium mb-3 text-neon-red flex items-center">
+                            <Database className="h-5 w-5 mr-2" />
+                            Step 3: Monitor and Analyze
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Use the Dashboard and Data Management pages to view real-time insights about bot 
+                            activity targeting your site. Analyze patterns, geographic origins, and behavior 
+                            profiles to better understand threats.
+                          </p>
+                          <div className="mt-4">
+                            <Button variant="outline" size="sm" className="w-full" asChild>
+                              <Link to="/data-management">
+                                View Data Analysis
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-abyss-800 p-4 rounded-lg border border-abyss-700">
+                          <h4 className="text-lg font-medium mb-3 text-neon-blue flex items-center">
+                            <Shield className="h-5 w-5 mr-2" />
+                            Step 4: Take Action
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Based on the insights gathered, take action to protect your site. Implement IP blocking, 
+                            adjust your site's security settings, or contact our team for advanced protection 
+                            strategies and custom solutions.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-abyss-700 pt-6">
+                      <h3 className="text-xl font-semibold mb-4">Testing Perpetual Abyss</h3>
+                      <p className="text-muted-foreground mb-4">
+                        To verify that Perpetual Abyss is working correctly on your website, you can use our built-in testing tools:
+                      </p>
+                      
+                      <div className="bg-abyss-800 p-4 rounded-lg border border-abyss-700">
+                        <h4 className="text-lg font-medium mb-3 text-neon-green">Simulated Bot Attacks</h4>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Our platform includes a simulator that can generate safe bot traffic to test your protection. 
+                          This helps you confirm that the system is properly detecting and redirecting malicious traffic.
+                        </p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h5 className="text-sm font-medium mb-2">Test Types:</h5>
+                            <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
+                              <li>Basic crawler simulation</li>
+                              <li>Advanced scraper testing</li>
+                              <li>Distributed attack simulation</li>
+                              <li>Custom behavior patterns</li>
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-sm font-medium mb-2">What to Look For:</h5>
+                            <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
+                              <li>Detection rates in Dashboard</li>
+                              <li>Honeypot engagement metrics</li>
+                              <li>Protection effectiveness scores</li>
+                              <li>False positive monitoring</li>
+                            </ul>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-4">
+                          <Button className="w-full bg-neon-blue text-black hover:bg-neon-blue/80" asChild>
+                            <Link to="/honeypot">
+                              Launch Bot Simulator
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Advanced Machine Learning Protection</CardTitle>
+                  <CardDescription>How our AI enhances your security</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-abyss-800 p-4 rounded-lg border border-abyss-700">
+                        <h4 className="text-lg font-medium mb-3 text-neon-purple">Anomaly Detection</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Our ML models analyze traffic patterns to identify anomalies that indicate bot activity, 
+                          even when they attempt to mimic human behavior.
+                        </p>
+                      </div>
+                      
+                      <div className="bg-abyss-800 p-4 rounded-lg border border-abyss-700">
+                        <h4 className="text-lg font-medium mb-3 text-neon-blue">Adaptive Learning</h4>
+                        <p className="text-sm text-muted-foreground">
+                          The system continuously learns from new bot behaviors, improving detection capabilities 
+                          and staying ahead of evolving threats.
+                        </p>
+                      </div>
+                      
+                      <div className="bg-abyss-800 p-4 rounded-lg border border-abyss-700">
+                        <h4 className="text-lg font-medium mb-3 text-neon-red">Threat Intelligence</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Real-time updates from our global network provide insights into emerging threats and 
+                          attack patterns before they reach your site.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 bg-abyss-900 p-4 rounded-lg border border-abyss-700">
+                      <h4 className="text-lg font-medium mb-3 flex items-center">
+                        <Lightbulb className="h-5 w-5 mr-2 text-yellow-400" />
+                        Performance Metrics
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="p-3 bg-abyss-800 rounded-md">
+                          <div className="text-sm text-muted-foreground">Detection Accuracy</div>
+                          <div className="text-2xl font-bold text-neon-green">97.5%</div>
+                        </div>
+                        <div className="p-3 bg-abyss-800 rounded-md">
+                          <div className="text-sm text-muted-foreground">False Positive Rate</div>
+                          <div className="text-2xl font-bold text-neon-purple">0.2%</div>
+                        </div>
+                        <div className="p-3 bg-abyss-800 rounded-md">
+                          <div className="text-sm text-muted-foreground">Adaptation Speed</div>
+                          <div className="text-2xl font-bold text-neon-blue">1.5h</div>
+                        </div>
+                        <div className="p-3 bg-abyss-800 rounded-md">
+                          <div className="text-sm text-muted-foreground">Threats Analyzed</div>
+                          <div className="text-2xl font-bold text-neon-red">2.4M+</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
