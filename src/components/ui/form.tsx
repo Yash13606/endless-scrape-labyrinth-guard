@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -42,19 +43,30 @@ const FormField = <
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
-  const { getFieldState, formState } = useFormContext()
+  const formContext = useFormContext()
 
-  const fieldState = getFieldState(fieldContext.name, formState)
-
-  if (!fieldContext) {
-    throw new Error("useFormField should be used within <FormField>")
+  // Return a simplified version when not in a form context
+  // This allows components to be used outside a form
+  if (!formContext) {
+    return {
+      id: itemContext?.id,
+      name: fieldContext?.name || "",
+      formItemId: itemContext ? `${itemContext.id}-form-item` : "",
+      formDescriptionId: itemContext ? `${itemContext.id}-form-item-description` : "",
+      formMessageId: itemContext ? `${itemContext.id}-form-item-message` : "",
+      error: undefined,
+    }
   }
 
-  const { id } = itemContext
+  const { getFieldState, formState } = formContext
+
+  const fieldState = fieldContext ? getFieldState(fieldContext.name, formState) : { error: undefined }
+
+  const { id } = itemContext || {}
 
   return {
     id,
-    name: fieldContext.name,
+    name: fieldContext?.name || "",
     formItemId: `${id}-form-item`,
     formDescriptionId: `${id}-form-item-description`,
     formMessageId: `${id}-form-item-message`,
@@ -66,9 +78,7 @@ type FormItemContextValue = {
   id: string
 }
 
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-)
+const FormItemContext = React.createContext<FormItemContextValue | undefined>(undefined)
 
 const FormItem = React.forwardRef<
   HTMLDivElement,
