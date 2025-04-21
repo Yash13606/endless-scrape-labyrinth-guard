@@ -2,6 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { InfoIcon } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface FeatureImportanceProps {
   featureImportance: Record<string, number>;
@@ -16,6 +18,15 @@ const featureDisplayNames: Record<string, string> = {
   'mouseMovements': 'Mouse Movements',
   'scrollBehavior': 'Scroll Behavior',
   'inputInteraction': 'Input Interaction',
+};
+
+const featureDescriptions: Record<string, string> = {
+  'userAgent': 'Analysis of browser identification, including device and OS information',
+  'fingerprint': 'Hardware and software fingerprinting to identify unique devices',
+  'navigationPatterns': 'How the visitor navigates between pages and site sections',
+  'mouseMovements': 'Analysis of cursor movements, precision, and natural behavior',
+  'scrollBehavior': 'How the visitor scrolls through content (speed, consistency)',
+  'inputInteraction': 'How the visitor interacts with form fields and interactive elements',
 };
 
 const MLFeatureImportance: React.FC<FeatureImportanceProps> = ({ 
@@ -51,7 +62,19 @@ const MLFeatureImportance: React.FC<FeatureImportanceProps> = ({
           {sortedFeatures.map(([feature, importance]) => (
             <div key={feature} className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm">{featureDisplayNames[feature] || feature}</span>
+                <div className="flex items-center">
+                  <span className="text-sm">{featureDisplayNames[feature] || feature}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InfoIcon className="h-3 w-3 ml-1 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs text-xs">{featureDescriptions[feature] || 'Feature description'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <span className="text-sm text-muted-foreground">{Math.round(importance * 100)}%</span>
               </div>
               <Progress 
