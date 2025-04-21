@@ -1,4 +1,3 @@
-
 // Common bot user agent patterns
 const BOT_UA_PATTERNS = [
   /bot/i,
@@ -66,6 +65,9 @@ import {
   updateModel,
   BotType
 } from './mlBotDetector';
+
+// Import database utilities
+import { storeDetection } from './detectionDatabase';
 
 const generateFingerprint = (): string => {
   const canvas = document.createElement('canvas');
@@ -237,15 +239,21 @@ export const provideFeedback = (result: BotDetectionResult, isActuallyBot: boole
   console.log(`Feedback provided: Detection ${result.isBot}, Actual: ${isActuallyBot}`);
 };
 
-// Log bot detection data (would normally send to server)
+// Log bot detection data (now stores in our database)
 export const logBotDetection = (result: BotDetectionResult): void => {
   console.log('Bot detection result:', result);
   
-  // In a real implementation, this would send data to the server
-  // For this demo, we'll store in localStorage
-  const logs = JSON.parse(localStorage.getItem('botLogs') || '[]');
-  logs.push(result);
-  localStorage.setItem('botLogs', JSON.stringify(logs));
+  // Store in our detection database
+  storeDetection({
+    timestamp: result.timestamp,
+    fingerprint: result.fingerprint,
+    userAgent: result.userAgent,
+    isBot: result.isBot,
+    botType: result.botType || 'UNKNOWN',
+    confidence: result.confidence,
+    reasons: result.reasons || [],
+    blocked: result.isBot && result.confidence > 0.7
+  });
   
   // Display on dashboard if on admin page
   const event = new CustomEvent('botDetected', { detail: result });
