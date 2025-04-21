@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -25,8 +24,8 @@ import {
   SlidersHorizontal,
   X
 } from 'lucide-react';
+import { logHoneypotInteraction } from "@/utils/supabaseHoneypot";
 
-// Honeypot component - this is a fake e-commerce site
 const Honeypot = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -41,94 +40,126 @@ const Honeypot = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   
-  // Get the current page from the URL or default to 1
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const category = searchParams.get('category');
   const sort = searchParams.get('sort') || 'popular';
   const productId = searchParams.get('product');
   
+  React.useEffect(() => {
+    if (!sessionStorage.getItem("abyss_session_id")) {
+      sessionStorage.setItem(
+        "abyss_session_id",
+        Math.random().toString(36).substring(2) + Date.now().toString(36)
+      );
+    }
+  }, []);
+
+  const sessionId =
+    sessionStorage.getItem("abyss_session_id") ??
+    Math.random().toString(36).substring(2);
+
+  const extendedLogBotDetection = React.useCallback(
+    (result: any, interaction_type: string, extra: Partial<any> = {}) => {
+      if (typeof logBotDetection === "function") logBotDetection(result);
+      logHoneypotInteraction({
+        session_id: sessionId,
+        fingerprint: result.fingerprint,
+        user_agent: result.userAgent,
+        ip_address: "",
+        interaction_type,
+        url_path: window.location.pathname + window.location.search,
+        request_headers: {},
+        time_spent: Date.now() - (window as any).abyss_loaded,
+        is_bot: result.isBot,
+        bot_type: result.botType,
+        confidence: result.confidence,
+        mouse_movements: (window as any).abyss_mouse_moves ?? 0,
+        keyboard_interactions: (window as any).abyss_keyboard_ints ?? 0,
+        navigation_speed: 0,
+        ...extra,
+        timestamp: new Date().toISOString(),
+      });
+    },
+    [sessionId]
+  );
+
+  React.useEffect(() => {
+    (window as any).abyss_loaded = Date.now();
+    (window as any).abyss_mouse_moves = 0;
+    (window as any).abyss_keyboard_ints = 0;
+    const incMouse = () => ((window as any).abyss_mouse_moves += 1);
+    const incKey = () => ((window as any).abyss_keyboard_ints += 1);
+    window.addEventListener("mousemove", incMouse);
+    window.addEventListener("keydown", incKey);
+    return () => {
+      window.removeEventListener("mousemove", incMouse);
+      window.removeEventListener("keydown", incKey);
+    };
+  }, []);
+
   useEffect(() => {
-    // Initialize bot detection
     initBotDetection();
-    
-    // Run a detection on page load and log the result
+
     const result = detectBot();
-    logBotDetection(result);
-    
-    // Generate products whenever page changes (infinite content)
+    extendedLogBotDetection(result, "page_load");
+
     setLoading(true);
-    
+
     if (productId) {
-      // We're on a product detail page
       setCurrentProductId(productId);
       const product = generateProductById(productId);
       setCurrentProduct(product);
       setProductReviews(generateReviews(productId, Math.floor(Math.random() * 10) + 5));
       setProducts([]);
     } else {
-      // We're on product listing page
       setCurrentProductId(null);
       setCurrentProduct(null);
       
-      // Generate 20 products for the current page (they'll be different each time)
       const generatedProducts = generateProducts(20);
       
-      // If category filter is applied
       const filteredProducts = category 
         ? generatedProducts.filter(p => p.category === category)
         : generatedProducts;
       
-      // Sort products according to the sort parameter
       const sortedProducts = [...filteredProducts].sort((a, b) => {
         if (sort === 'price-low') return a.price - b.price;
         if (sort === 'price-high') return b.price - a.price;
         if (sort === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        // Default: sort by rating/popularity
         return b.rating - a.rating;
       });
       
       setProducts(sortedProducts);
       
-      // Collect unique categories for filtering
       const allCategories = Array.from(new Set(generatedProducts.map(p => p.category)));
       setVisibleCategories(allCategories);
     }
     
     setLoading(false);
     
-    // Add some hidden links that only bots will follow
     setTimeout(() => {
-      // Add a honeypot link that's invisible to users but visible to bots
       const hiddenLinks = document.querySelectorAll('.hidden-link');
       
       hiddenLinks.forEach((link) => {
         link.addEventListener('click', (e) => {
           e.preventDefault();
           const botDetection = detectBot();
-          // If a hidden link is clicked, it's definitely a bot
-          logBotDetection({
-            ...botDetection,
-            isBot: true,
-            confidence: 1.0,
-            reasons: [...(botDetection.reasons || []), 'Clicked hidden honeypot link']
-          });
-          
-          // Redirect to a trap page
+          extendedLogBotDetection(
+            { ...botDetection, isBot: true, confidence: 1.0, reasons: [...(botDetection.reasons || []), 'Clicked hidden honeypot link'] },
+            "hidden_link_click"
+          );
           navigate(`/honeypot?page=${Math.floor(Math.random() * 1000) + 100}`);
         });
       });
     }, 500);
-  }, [currentPage, category, sort, productId, navigate]);
-  
+  }, [currentPage, category, sort, productId, navigate, extendedLogBotDetection]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     navigate(`/honeypot?search=${encodeURIComponent(searchQuery)}&page=1`);
-    
-    // This is a good opportunity to check for bot behavior
     const botDetection = detectBot();
-    logBotDetection(botDetection);
+    extendedLogBotDetection(botDetection, "search_submit");
   };
-  
+
   const handleFilterToggle = (categoryName: string) => {
     if (activeFilters.includes(categoryName)) {
       setActiveFilters(activeFilters.filter(c => c !== categoryName));
@@ -136,18 +167,16 @@ const Honeypot = () => {
       setActiveFilters([...activeFilters, categoryName]);
     }
   };
-  
+
   const changePage = (newPage: number) => {
     navigate(`/honeypot?page=${newPage}${category ? `&category=${category}` : ''}${sort ? `&sort=${sort}` : ''}`);
     window.scrollTo(0, 0);
   };
-  
-  // Format price with currency symbol
+
   const formatPrice = (price: number) => {
     return `$${price.toFixed(2)}`;
   };
-  
-  // Generate star ratings
+
   const renderStarRating = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -168,10 +197,9 @@ const Honeypot = () => {
     
     return <div className="flex">{stars}</div>;
   };
-  
+
   return (
     <div className="honeypot min-h-screen flex flex-col">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
@@ -191,7 +219,6 @@ const Honeypot = () => {
               <Link to="/honeypot?category=Home%20%26%20Kitchen" className="hover:text-blue-600">Home & Kitchen</Link>
               <Link to="/honeypot?category=Beauty%20%26%20Personal%20Care" className="hover:text-blue-600">Beauty</Link>
               
-              {/* Hidden links that only bots will see */}
               <a href="/honeypot?page=bot-trap-1" className="hidden-link">Special Offers</a>
               <a href="/honeypot?page=bot-trap-2" className="hidden-link">Private Sale</a>
               <a href="/honeypot?page=bot-trap-3" className="hidden-link">Admin</a>
@@ -226,7 +253,6 @@ const Honeypot = () => {
             </div>
           </div>
           
-          {/* Mobile menu */}
           {mobileMenuOpen && (
             <div className="md:hidden py-4 border-t border-gray-200">
               <form onSubmit={handleSearchSubmit} className="mb-4">
@@ -257,10 +283,8 @@ const Honeypot = () => {
       </header>
       
       <main className="flex-1 container mx-auto px-4 py-6">
-        {/* Product Detail Page */}
         {currentProduct && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Breadcrumbs */}
             <div className="col-span-full mb-4">
               <nav className="text-sm">
                 <ol className="flex items-center space-x-2">
@@ -281,7 +305,6 @@ const Honeypot = () => {
               </nav>
             </div>
             
-            {/* Product Image */}
             <div className="flex justify-center">
               <img 
                 src={currentProduct.image} 
@@ -290,7 +313,6 @@ const Honeypot = () => {
               />
             </div>
             
-            {/* Product Info */}
             <div className="space-y-6">
               <div>
                 <h1 className="text-2xl font-bold">{currentProduct.name}</h1>
@@ -343,7 +365,6 @@ const Honeypot = () => {
               </div>
             </div>
             
-            {/* Product description */}
             <div className="col-span-full mt-6">
               <h2 className="text-xl font-bold mb-4">Product Description</h2>
               <div className="space-y-4 text-gray-700">
@@ -353,7 +374,6 @@ const Honeypot = () => {
               </div>
             </div>
             
-            {/* Reviews */}
             <div className="col-span-full mt-8">
               <h2 className="text-xl font-bold mb-4">Customer Reviews</h2>
               
@@ -399,7 +419,6 @@ const Honeypot = () => {
               </div>
             </div>
             
-            {/* Similar products */}
             <div className="col-span-full mt-12">
               <h2 className="text-xl font-bold mb-6">You Might Also Like</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -427,10 +446,8 @@ const Honeypot = () => {
           </div>
         )}
         
-        {/* Product Listing Page */}
         {!currentProduct && (
           <>
-            {/* Page title */}
             <header className="mb-6">
               <h1 className="text-2xl font-bold">
                 {category ? `${category} Products` : 'All Products'}
@@ -459,7 +476,6 @@ const Honeypot = () => {
             </header>
             
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Sidebar filters - desktop */}
               <aside className={`w-full md:w-64 space-y-6 ${filtersOpen ? 'block' : 'hidden md:block'}`}>
                 <div className="md:hidden flex justify-between items-center mb-2">
                   <h2 className="font-medium">Filters</h2>
@@ -523,7 +539,6 @@ const Honeypot = () => {
                   </div>
                 </div>
                 
-                {/* Mobile-only buttons */}
                 <div className="md:hidden flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setFiltersOpen(false)}>
                     Cancel
@@ -532,7 +547,6 @@ const Honeypot = () => {
                 </div>
               </aside>
               
-              {/* Mobile filter button */}
               <div className="md:hidden sticky top-[68px] z-10 bg-white shadow-sm -mx-4 px-4 py-2 mb-4">
                 <Button variant="outline" onClick={() => setFiltersOpen(true)} className="w-full flex items-center justify-center">
                   <SlidersHorizontal className="h-4 w-4 mr-2" />
@@ -540,7 +554,6 @@ const Honeypot = () => {
                 </Button>
               </div>
               
-              {/* Product grid */}
               <div className="flex-1">
                 {loading ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -605,7 +618,6 @@ const Honeypot = () => {
                           </Link>
                         ))}
                         
-                        {/* Hidden trap links - Only visible to bots */}
                         {Array.from({ length: 5 }).map((_, i) => (
                           <a key={`trap-${i}`} href={`/honeypot?page=${currentPage + 100 + i}`} className="hidden-link">
                             Special Product {i}
@@ -616,7 +628,6 @@ const Honeypot = () => {
                   </>
                 )}
                 
-                {/* Pagination */}
                 <div className="mt-8 flex justify-center">
                   <nav className="flex items-center space-x-2">
                     <Button 
@@ -628,7 +639,6 @@ const Honeypot = () => {
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     
-                    {/* Always show first page */}
                     <Button 
                       variant={currentPage === 1 ? "default" : "outline"}
                       onClick={() => changePage(1)}
@@ -636,10 +646,8 @@ const Honeypot = () => {
                       1
                     </Button>
                     
-                    {/* If we're past page 3, show ellipsis */}
                     {currentPage > 3 && <span className="px-2">...</span>}
                     
-                    {/* Show the page before current if we're past page 2 */}
                     {currentPage > 2 && (
                       <Button 
                         variant="outline"
@@ -649,7 +657,6 @@ const Honeypot = () => {
                       </Button>
                     )}
                     
-                    {/* Current page, unless it's page 1 (already shown) */}
                     {currentPage !== 1 && (
                       <Button 
                         variant={currentPage === 1 ? "outline" : "default"}
@@ -659,7 +666,6 @@ const Honeypot = () => {
                       </Button>
                     )}
                     
-                    {/* Next page */}
                     <Button 
                       variant="outline"
                       onClick={() => changePage(currentPage + 1)}
@@ -667,10 +673,8 @@ const Honeypot = () => {
                       {currentPage + 1}
                     </Button>
                     
-                    {/* Ellipsis to indicate there are more pages */}
                     <span className="px-2">...</span>
                     
-                    {/* Random large page number to suggest many pages */}
                     <Button 
                       variant="outline"
                       onClick={() => changePage(currentPage + 50)}
@@ -693,7 +697,6 @@ const Honeypot = () => {
         )}
       </main>
       
-      {/* Footer */}
       <footer className="bg-gray-100 border-t border-gray-200 py-8">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -714,7 +717,6 @@ const Honeypot = () => {
                 <li><Link to="/honeypot?category=Beauty%20%26%20Personal%20Care" className="text-gray-600 hover:text-blue-600">Beauty & Personal Care</Link></li>
               </ul>
               
-              {/* Hidden links - only visible to bots */}
               <ul className="mt-4">
                 <li><a href="/honeypot?page=secure-admin" className="hidden-link">Admin Login</a></li>
                 <li><a href="/honeypot?page=private-data" className="hidden-link">API Keys</a></li>
@@ -743,7 +745,7 @@ const Honeypot = () => {
                   <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723 10.054 10.054 0 01-3.127 1.184 4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.16a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
                 </a>
                 <a href="#" className="text-gray-600 hover:text-blue-600">
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.859.07-3.211 0-3.586-.015-4.859-.074-1.17.255-1.816-.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
                 </a>
                 <a href="#" className="text-gray-600 hover:text-blue-600">
                   <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.493 1.109-1.1 1.109zm8 6.891h-1.998v-2.861c0-1.881-2.002-1.722-2.002 0v2.861h-2v-6h2v1.093c.872-1.616 4-1.736 4 1.548v3.359z"/></svg>
