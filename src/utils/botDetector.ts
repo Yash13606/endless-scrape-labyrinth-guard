@@ -46,6 +46,7 @@ export interface BotDetectionResult {
   fingerprint: string;
   userAgent: string;
   timestamp: number;
+  botType?: string; // New field for ML-based detection
 }
 
 // Store navigation timestamps to measure speed
@@ -54,6 +55,17 @@ let mouseMoveCount = 0;
 let scrollCount = 0;
 let inputInteractionCount = 0;
 let hasBeenFingerprinted = false;
+let sessionStartTime = Date.now();
+
+// Import ML-based detection
+import { 
+  extractFeatures, 
+  predictBotProbability, 
+  mlResultToBotDetection,
+  recordFeedback,
+  updateModel,
+  BotType
+} from './mlBotDetector';
 
 const generateFingerprint = (): string => {
   const canvas = document.createElement('canvas');
@@ -75,8 +87,14 @@ const generateFingerprint = (): string => {
   return btoa(`${vendor}|${renderer}|${screenProps}|${timezone}|${languages}`);
 };
 
+// Flag to toggle between legacy and ML-based detection
+const USE_ML_DETECTION = true;
+
 // Initialize event listeners for behavior detection
 export const initBotDetection = (): void => {
+  // Reset session start time
+  sessionStartTime = Date.now();
+  
   // Navigation timing
   lastNavigationTime = Date.now();
   
@@ -115,66 +133,108 @@ export const initBotDetection = (): void => {
       logBotDetection(initialResult);
     }, 1000);
   }
+  
+  // Periodic model updates - would connect to backend in real implementation
+  setInterval(() => {
+    if (USE_ML_DETECTION) {
+      updateModel();
+    }
+  }, 3600000); // Every hour
 };
 
 // Check if current client is likely a bot
 export const detectBot = (): BotDetectionResult => {
   const userAgent = navigator.userAgent;
-  const reasons: string[] = [];
-  let botScore = 0;
-  let maxScore = 0;
+  const fingerprint = generateFingerprint();
   
-  // Check user agent against known patterns
-  for (const pattern of BOT_UA_PATTERNS) {
-    maxScore += 3;
-    if (pattern.test(userAgent)) {
-      botScore += 3;
-      reasons.push(`UA matches pattern: ${pattern}`);
+  if (USE_ML_DETECTION) {
+    // ML-based detection
+    const features = extractFeatures(
+      userAgent,
+      fingerprint,
+      mouseMoveCount,
+      scrollCount,
+      inputInteractionCount,
+      lastNavigationTime,
+      sessionStartTime
+    );
+    
+    const prediction = predictBotProbability(features);
+    const result = mlResultToBotDetection(prediction, userAgent, fingerprint);
+    
+    // Update navigation time for next check
+    lastNavigationTime = Date.now();
+    
+    return result;
+  } else {
+    // Legacy pattern-based detection
+    const reasons: string[] = [];
+    let botScore = 0;
+    let maxScore = 0;
+    
+    // Check user agent against known patterns
+    for (const pattern of BOT_UA_PATTERNS) {
+      maxScore += 3;
+      if (pattern.test(userAgent)) {
+        botScore += 3;
+        reasons.push(`UA matches pattern: ${pattern}`);
+      }
     }
+    
+    // Check navigation speed
+    maxScore += BOT_BEHAVIORS.navigationSpeed.weight;
+    if (lastNavigationTime && (Date.now() - lastNavigationTime < BOT_BEHAVIORS.navigationSpeed.threshold)) {
+      botScore += BOT_BEHAVIORS.navigationSpeed.weight;
+      reasons.push(`Fast navigation: ${Date.now() - lastNavigationTime}ms`);
+    }
+    
+    // Check mouse movements
+    maxScore += BOT_BEHAVIORS.mouseMoves.weight;
+    if (mouseMoveCount < BOT_BEHAVIORS.mouseMoves.threshold) {
+      botScore += BOT_BEHAVIORS.mouseMoves.weight;
+      reasons.push(`Limited mouse activity: ${mouseMoveCount} moves`);
+    }
+    
+    // Check scroll patterns
+    maxScore += BOT_BEHAVIORS.scrollPatterns.weight;
+    if (scrollCount < BOT_BEHAVIORS.scrollPatterns.threshold) {
+      botScore += BOT_BEHAVIORS.scrollPatterns.weight;
+      reasons.push(`Limited scrolling: ${scrollCount} events`);
+    }
+    
+    // Check input interaction
+    maxScore += BOT_BEHAVIORS.inputInteraction.weight;
+    if (inputInteractionCount <= BOT_BEHAVIORS.inputInteraction.threshold) {
+      botScore += BOT_BEHAVIORS.inputInteraction.weight;
+      reasons.push('No input interaction');
+    }
+    
+    // Generate confidence score (0-1)
+    const confidence = maxScore > 0 ? botScore / maxScore : 0;
+    
+    // Update navigation time for next check
+    lastNavigationTime = Date.now();
+    
+    return {
+      isBot: confidence > 0.6, // Threshold for bot classification
+      confidence,
+      reasons,
+      fingerprint,
+      userAgent,
+      timestamp: Date.now(),
+      botType: confidence > 0.6 ? 'UNKNOWN_BOT' : 'HUMAN'
+    };
+  }
+};
+
+// Feedback mechanism to improve bot detection
+export const provideFeedback = (result: BotDetectionResult, isActuallyBot: boolean): void => {
+  if (USE_ML_DETECTION) {
+    recordFeedback(result, isActuallyBot);
   }
   
-  // Check navigation speed
-  maxScore += BOT_BEHAVIORS.navigationSpeed.weight;
-  if (lastNavigationTime && (Date.now() - lastNavigationTime < BOT_BEHAVIORS.navigationSpeed.threshold)) {
-    botScore += BOT_BEHAVIORS.navigationSpeed.weight;
-    reasons.push(`Fast navigation: ${Date.now() - lastNavigationTime}ms`);
-  }
-  
-  // Check mouse movements
-  maxScore += BOT_BEHAVIORS.mouseMoves.weight;
-  if (mouseMoveCount < BOT_BEHAVIORS.mouseMoves.threshold) {
-    botScore += BOT_BEHAVIORS.mouseMoves.weight;
-    reasons.push(`Limited mouse activity: ${mouseMoveCount} moves`);
-  }
-  
-  // Check scroll patterns
-  maxScore += BOT_BEHAVIORS.scrollPatterns.weight;
-  if (scrollCount < BOT_BEHAVIORS.scrollPatterns.threshold) {
-    botScore += BOT_BEHAVIORS.scrollPatterns.weight;
-    reasons.push(`Limited scrolling: ${scrollCount} events`);
-  }
-  
-  // Check input interaction
-  maxScore += BOT_BEHAVIORS.inputInteraction.weight;
-  if (inputInteractionCount <= BOT_BEHAVIORS.inputInteraction.threshold) {
-    botScore += BOT_BEHAVIORS.inputInteraction.weight;
-    reasons.push('No input interaction');
-  }
-  
-  // Generate confidence score (0-1)
-  const confidence = maxScore > 0 ? botScore / maxScore : 0;
-  
-  // Update navigation time for next check
-  lastNavigationTime = Date.now();
-  
-  return {
-    isBot: confidence > 0.6, // Threshold for bot classification
-    confidence,
-    reasons,
-    fingerprint: generateFingerprint(),
-    userAgent,
-    timestamp: Date.now()
-  };
+  // In a real system, this would be sent to a backend for training
+  console.log(`Feedback provided: Detection ${result.isBot}, Actual: ${isActuallyBot}`);
 };
 
 // Log bot detection data (would normally send to server)
