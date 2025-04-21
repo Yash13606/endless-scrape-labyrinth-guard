@@ -83,3 +83,36 @@ export async function fetchModelTrainingHistory(limit = 5) {
   }
   return data ?? [];
 }
+
+// API endpoint for external access
+// This creates an access point to fetch honeypot data from other websites
+export async function fetchHoneypotData(apiKey: string) {
+  // In a real implementation, validate the API key against stored valid keys
+  if (!apiKey || apiKey.length < 10) {
+    return { error: "Invalid API key" };
+  }
+  
+  // Fetch recent interactions
+  const { data: interactions, error: interactionsError } = await supabase
+    .from("bot_interactions")
+    .select("*")
+    .order("timestamp", { ascending: false })
+    .limit(50);
+  
+  // Fetch latest metrics
+  const metrics = await fetchDetectionMetrics();
+  
+  // Fetch latest model training data
+  const modelHistory = await fetchModelTrainingHistory(3);
+  
+  if (interactionsError) {
+    return { error: "Failed to fetch data" };
+  }
+  
+  return {
+    timestamp: new Date().toISOString(),
+    interactions,
+    metrics,
+    modelHistory
+  };
+}

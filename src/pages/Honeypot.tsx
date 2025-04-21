@@ -76,8 +76,7 @@ const Honeypot = () => {
         mouse_movements: (window as any).abyss_mouse_moves ?? 0,
         keyboard_interactions: (window as any).abyss_keyboard_ints ?? 0,
         navigation_speed: 0,
-        ...extra,
-        timestamp: new Date().toISOString(),
+        ...extra
       });
     },
     [sessionId]

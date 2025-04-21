@@ -6,21 +6,103 @@ import {
   fetchDetectionMetrics,
   fetchModelTrainingHistory,
 } from "@/utils/supabaseHoneypot";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 export const ResultsContent = () => {
   const [metrics, setMetrics] = useState<any | null>(null);
   const [modelHistory, setModelHistory] = useState<any[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchDetectionMetrics().then(setMetrics);
     fetchModelTrainingHistory().then(setModelHistory);
   }, []);
 
+  const copyApiKey = () => {
+    navigator.clipboard.writeText("honeypot-secure-api-key-123456");
+    toast({
+      title: "API Key Copied",
+      description: "The API key has been copied to your clipboard.",
+    });
+  };
+
+  const copyEndpoint = () => {
+    navigator.clipboard.writeText("https://jogdukxsxjwjhozwfapy.functions.supabase.co/honeypot-api");
+    toast({
+      title: "API Endpoint Copied",
+      description: "The API endpoint has been copied to your clipboard.",
+    });
+  };
+
   return (
     <main className="p-6">
       <div className="grid grid-cols-1 gap-6 mb-8">
         <GettingStartedSection />
         <MLProtectionSection />
+        
+        <section className="p-6 bg-white rounded-lg shadow border">
+          <h2 className="text-xl font-semibold mb-4">API Integration</h2>
+          <Alert className="mb-4">
+            <AlertTitle className="text-blue-600">External API Access</AlertTitle>
+            <AlertDescription>
+              You can access honeypot data from external websites using the API endpoint and key below.
+            </AlertDescription>
+          </Alert>
+          
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-gray-50 rounded-md">
+              <div>
+                <p className="text-sm font-medium text-gray-700">API Endpoint</p>
+                <code className="text-xs sm:text-sm bg-gray-100 p-1 rounded">
+                  https://jogdukxsxjwjhozwfapy.functions.supabase.co/honeypot-api
+                </code>
+              </div>
+              <Button size="sm" variant="outline" onClick={copyEndpoint} className="whitespace-nowrap">
+                <Copy className="h-4 w-4 mr-2" /> Copy
+              </Button>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-gray-50 rounded-md">
+              <div>
+                <p className="text-sm font-medium text-gray-700">API Key</p>
+                <code className="text-xs sm:text-sm bg-gray-100 p-1 rounded">honeypot-secure-api-key-123456</code>
+                <Badge variant="outline" className="ml-2">demo only</Badge>
+              </div>
+              <Button size="sm" variant="outline" onClick={copyApiKey} className="whitespace-nowrap">
+                <Copy className="h-4 w-4 mr-2" /> Copy
+              </Button>
+            </div>
+            
+            <div className="mt-4">
+              <h3 className="text-lg font-medium mb-2">API Documentation</h3>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <h4 className="font-medium mb-2">GET /</h4>
+                <p className="text-sm mb-2">Fetches recent honeypot data, metrics and model history.</p>
+                <p className="text-sm mb-2"><strong>Headers:</strong></p>
+                <code className="text-xs block bg-gray-100 p-2 rounded mb-3">
+                  x-api-key: your-api-key
+                </code>
+                
+                <h4 className="font-medium mb-2">POST /</h4>
+                <p className="text-sm mb-2">Submit model training data.</p>
+                <p className="text-sm mb-2"><strong>Headers:</strong></p>
+                <code className="text-xs block bg-gray-100 p-2 rounded mb-2">
+                  Content-Type: application/json<br/>
+                  x-api-key: your-api-key
+                </code>
+                <p className="text-sm mb-2"><strong>Body:</strong></p>
+                <code className="text-xs block bg-gray-100 p-2 rounded">
+                  {`{\n  "type": "train_model",\n  "accuracy": 0.95,\n  "samples": 200,\n  "improvements": ["Better crawler detection"]\n}`}
+                </code>
+              </div>
+            </div>
+          </div>
+        </section>
+        
         <section className="p-6 bg-white rounded-lg shadow border">
           <h2 className="text-xl font-semibold mb-4">ML Model Detection Metrics</h2>
           {metrics ? (
@@ -53,6 +135,7 @@ export const ResultsContent = () => {
             <div>No metrics data found.</div>
           )}
         </section>
+        
         <section className="p-6 bg-white rounded-lg shadow border">
           <h2 className="text-xl font-semibold mb-4">ML Model Training History</h2>
           <table className="min-w-full text-sm">
