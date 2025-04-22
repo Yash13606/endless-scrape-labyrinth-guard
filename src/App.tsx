@@ -12,6 +12,7 @@ import PricingPage from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import DataManagement from "./pages/DataManagement";
 import Settings from "./pages/Settings";
+import HoneypotShowcase from "./pages/HoneypotShowcase";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/data-management" element={<DataManagement />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/honeypot-showcase" element={<HoneypotShowcase />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
