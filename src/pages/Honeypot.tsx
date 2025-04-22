@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import HoneypotLayout from '@/components/honeypot/HoneypotLayout';
 import ProductList from '@/components/honeypot/ProductList';
 import ProductDetail from '@/components/honeypot/ProductDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Filter, SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Filter, SlidersHorizontal, X, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { initBotDetection, detectBot } from '@/utils/botDetector';
 import { FakeProduct, generateProducts, generateProductById, generateReviews } from '@/utils/contentGenerator';
 import { logHoneypotInteraction } from "@/utils/supabaseHoneypot";
+import { useExtendedLogBotDetection } from '@/utils/useExtendedLogBotDetection';
 
 const Honeypot = () => {
   const [searchParams] = useSearchParams();
@@ -43,43 +44,7 @@ const Honeypot = () => {
     sessionStorage.getItem("abyss_session_id") ??
     Math.random().toString(36).substring(2);
 
-  const extendedLogBotDetection = React.useCallback(
-    (result: any, interaction_type: string, extra: Partial<any> = {}) => {
-      if (typeof logBotDetection === "function") logBotDetection(result);
-      logHoneypotInteraction({
-        session_id: sessionId,
-        fingerprint: result.fingerprint,
-        user_agent: result.userAgent,
-        ip_address: "",
-        interaction_type,
-        url_path: window.location.pathname + window.location.search,
-        request_headers: {},
-        time_spent: Date.now() - (window as any).abyss_loaded,
-        is_bot: result.isBot,
-        bot_type: result.botType,
-        confidence: result.confidence,
-        mouse_movements: (window as any).abyss_mouse_moves ?? 0,
-        keyboard_interactions: (window as any).abyss_keyboard_ints ?? 0,
-        navigation_speed: 0,
-        ...extra
-      });
-    },
-    [sessionId]
-  );
-
-  React.useEffect(() => {
-    (window as any).abyss_loaded = Date.now();
-    (window as any).abyss_mouse_moves = 0;
-    (window as any).abyss_keyboard_ints = 0;
-    const incMouse = () => ((window as any).abyss_mouse_moves += 1);
-    const incKey = () => ((window as any).abyss_keyboard_ints += 1);
-    window.addEventListener("mousemove", incMouse);
-    window.addEventListener("keydown", incKey);
-    return () => {
-      window.removeEventListener("mousemove", incMouse);
-      window.removeEventListener("keydown", incKey);
-    };
-  }, []);
+  const extendedLogBotDetection = useExtendedLogBotDetection();
 
   useEffect(() => {
     initBotDetection();
